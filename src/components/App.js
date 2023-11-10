@@ -33,23 +33,22 @@ export class App extends Component {
   };
 
   async componentDidUpdate(prevProps, prevState) {
-    if (
-      prevState.query !== this.state.query ||
-      prevState.page !== this.state.page
-    ) {
+    const { query, page } = this.state;
+    
+    if (prevState.query !== query || prevState.page !== page) {
       try {
         this.setState({ loading: true });
-        const data = await fetchImg(this.state.query, this.state.page);
+        const data = await fetchImg(query, page);
         const { totalHits, hits } = data;
         if (totalHits === 0) {
           toast.error(`There are no pictures for your search`);
           return;
         }
 
-        this.setState({
-          images: [...this.state.images, ...hits],
+        this.setState(prevState => ({
+          images: [...prevState.images, ...hits],
           totalHits: totalHits,
-        });
+        }));
       } catch (error) {
         toast.error(`Try to reload page`);
       } finally {
@@ -59,18 +58,16 @@ export class App extends Component {
   }
 
   render() {
+    const { handleSubmit, handleLoadMore } = this;
+    const { images, loading, totalHits } = this.state;
     return (
       <Layout>
-        <Searchbar onSubmit={this.handleSubmit} />
-        {this.state.images.length > 0 && (
-          <ImageGallery images={this.state.images} />
+        <Searchbar onSubmit={handleSubmit} />
+        {images.length > 0 && <ImageGallery images={images} />}
+        {loading && <Loader />}
+        {images.length > 0 && images.length < totalHits && (
+          <Button onClick={handleLoadMore} />
         )}
-        {this.state.loading && <Loader />}
-
-        {this.state.images.length > 0 &&
-          this.state.images.length < this.state.totalHits && (
-            <Button onClick={this.handleLoadMore} />
-          )}
         <GlobalStyle />
         <Toaster position="top-right" />
       </Layout>
