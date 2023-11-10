@@ -14,19 +14,16 @@ export class App extends Component {
     page: 1,
     images: [],
     loading: false,
-    error: false,
+    totalHits: 0,
   };
 
-  handleSubmit = evt => {
-    evt.preventDefault();
-
+  handleSubmit = query => {
     this.setState({
       page: 1,
-      query: evt.target.query.value.trim(),
+      query: query,
       images: [],
+      totalHits: 0,
     });
-
-    evt.target.reset();
   };
 
   handleLoadMore = () => {
@@ -51,6 +48,7 @@ export class App extends Component {
 
         this.setState({
           images: [...this.state.images, ...hits],
+          totalHits: totalHits,
         });
       } catch (error) {
         toast.error(`Try to reload page`);
@@ -69,9 +67,10 @@ export class App extends Component {
         )}
         {this.state.loading && <Loader />}
 
-        {this.state.images.length > 0 && (
-          <Button onClick={this.handleLoadMore} />
-        )}
+        {this.state.images.length > 0 &&
+          this.state.images.length < this.state.totalHits && (
+            <Button onClick={this.handleLoadMore} />
+          )}
         <GlobalStyle />
         <Toaster position="top-right" />
       </Layout>
